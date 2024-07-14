@@ -1,5 +1,6 @@
 package com.mx.felipe.screenmatch.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mx.felipe.screenmatch.model.DatosSerie;
 
@@ -9,6 +10,10 @@ public class ConvierteDatos implements IConvirteDatos {
 
     @Override
     public <T> T obtenerDatos(String json, Class<T> clase) {
-        return null;
+        try {
+            return objectMapper.readValue(json, clase);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
