@@ -22,7 +22,7 @@ public class ConsumoAPI {
             return response.body();
 
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("No encontre el tipo de cambio!");
+            throw new RuntimeException(e.getMessage());
         }
     }
 
