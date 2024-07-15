@@ -7,8 +7,10 @@ import com.mx.felipe.screenmatch.service.ConsumoAPI;
 import com.mx.felipe.screenmatch.service.ConvierteDatos;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -25,7 +27,8 @@ public class Principal {
                 1) Obtener datos por Serie
                 2) Obtener dator por Serie, numero de temporada y episodio
                 3) Obtener todos los datos de la Serie
-                4) Salir""";
+                4) Obtener mejores episodios de la Serie
+                5) Salir""";
         System.out.println("**********************************************************************************");
         System.out.println(menuPrincipal);
     }
@@ -70,16 +73,17 @@ public class Principal {
                 System.out.println("Ingrese el nombre de la serie: ");
                 var serie = sc.nextLine();
                 var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
-                var datos = conversor.obtenerDatos(json, DatosSerie.class);
+                var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
 
                 List<DatosTemporadas> temporadas = new ArrayList<>();
-                for (int i = 1; i <= Integer.parseInt(datos.totalDeTemporadas()); i++) {
+                for (int i = 1; i <= Integer.parseInt(datosSerie.totalDeTemporadas()); i++) {
                     var jsonTemporada =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + "&Season=" + i + API_KEY);
                     var datosTemporada = conversor.obtenerDatos(jsonTemporada, DatosTemporadas.class);
                     temporadas.add(datosTemporada);
                 }
 
                 //temporadas.forEach(System.out::println);
+
                 // Mostrar datos de los episodios de cada temporada
 //                for (int i = 0; i < Integer.parseInt(datos.totalDeTemporadas()); i++) {
 //                    List<DatosEpisodio> datosEpisodios = temporadas.get(i).episodios();
@@ -91,10 +95,36 @@ public class Principal {
 //                }
 
                 temporadas.forEach(t -> t.episodios().forEach(e -> System.out.println("Temporada: " + t.temporada()
-                        + ",Nombre del episodio: " + e.titulo())));
+                                + ",Nombre del episodio: " + e.titulo())));
 
 
             } else if (opcion == 4) {
+                System.out.println("Ingrese el nombre de la serie: ");
+                var serie = sc.nextLine();
+                var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
+                var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
+
+                List<DatosTemporadas> temporadas = new ArrayList<>();
+                for (int i = 1; i <= Integer.parseInt(datosSerie.totalDeTemporadas()); i++) {
+                    var jsonTemporada =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + "&Season=" + i + API_KEY);
+                    var datosTemporada = conversor.obtenerDatos(jsonTemporada, DatosTemporadas.class);
+                    temporadas.add(datosTemporada);
+                }
+
+                // Convertir toda la informacion de las temporadas a una lista del tipo DatosEpisodio
+                List<DatosEpisodio> datosEpisodios =  temporadas.stream()
+                        .flatMap(t -> t.episodios().stream())
+                        .collect(Collectors.toList());
+
+                System.out.println("**********************************************************************************");
+                System.out.println("¡Top 5 episodios!");
+                datosEpisodios.stream()
+                        .sorted(Comparator.comparing(DatosEpisodio::evaluacion).reversed())
+                        .filter(episodio -> !episodio.evaluacion().equalsIgnoreCase("N/A"))
+                        .limit(5)
+                        .forEach(System.out::println);
+
+            } else if (opcion == 5) {
 
                 System.out.println("**********************************************************************************");
                 System.out.println("¡Esperamos verte pronto!");
