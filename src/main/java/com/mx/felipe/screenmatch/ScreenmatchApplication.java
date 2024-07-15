@@ -2,11 +2,17 @@ package com.mx.felipe.screenmatch;
 
 import com.mx.felipe.screenmatch.model.DatosEpisodio;
 import com.mx.felipe.screenmatch.model.DatosSerie;
+import com.mx.felipe.screenmatch.model.DatosTemporadas;
+import com.mx.felipe.screenmatch.principal.Principal;
 import com.mx.felipe.screenmatch.service.ConsumoAPI;
 import com.mx.felipe.screenmatch.service.ConvierteDatos;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 @SpringBootApplication
 public class ScreenmatchApplication implements CommandLineRunner {
@@ -18,19 +24,8 @@ public class ScreenmatchApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
-
-		var consumoApi = new ConsumoAPI();
-		var json =  consumoApi.getData("http://www.omdbapi.com/?t=breaking+bad&apikey=b8b526fa");
-		System.out.println(json);
-
-		ConvierteDatos conversor = new ConvierteDatos();
-		var datos = conversor.obtenerDatos(json, DatosSerie.class);
-		System.out.println(datos);
-
-		var jsonEpisodio = consumoApi.getData("http://www.omdbapi.com/?t=breaking+bad&Season=1&episode=1&apikey=b8b526fa");
-		var datosEpisodio = conversor.obtenerDatos(jsonEpisodio, DatosEpisodio.class);
-		System.out.println(datosEpisodio);
-
+		Principal run = new Principal();
+		run.logicaPrograma();
 
 
 	}
