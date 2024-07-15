@@ -3,9 +3,11 @@ package com.mx.felipe.screenmatch.principal;
 import com.mx.felipe.screenmatch.model.DatosEpisodio;
 import com.mx.felipe.screenmatch.model.DatosSerie;
 import com.mx.felipe.screenmatch.model.DatosTemporadas;
+import com.mx.felipe.screenmatch.model.Episodio;
 import com.mx.felipe.screenmatch.service.ConsumoAPI;
 import com.mx.felipe.screenmatch.service.ConvierteDatos;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -94,8 +96,17 @@ public class Principal {
 //                    }
 //                }
 
-                temporadas.forEach(t -> t.episodios().forEach(e -> System.out.println("Temporada: " + t.temporada()
-                                + ",Nombre del episodio: " + e.titulo())));
+//                temporadas.forEach(t -> t.episodios().forEach(e -> System.out.println("Temporada: " + t.temporada()
+//                                + ",Nombre del episodio: " + e.titulo())));
+
+                // Convirtiendo los datos a una lista tipo episodio
+                List<Episodio> episodios = temporadas.stream()
+                        .flatMap(t -> t.episodios().stream()
+                                .map(datosEpisodio ->
+                                        new Episodio(Integer.parseInt(t.temporada()), datosEpisodio)))
+                        .collect(Collectors.toList());
+
+                episodios.forEach(System.out::println);
 
 
             } else if (opcion == 4) {
@@ -112,17 +123,25 @@ public class Principal {
                 }
 
                 // Convertir toda la informacion de las temporadas a una lista del tipo DatosEpisodio
-                List<DatosEpisodio> datosEpisodios =  temporadas.stream()
-                        .flatMap(t -> t.episodios().stream())
+                List<Episodio> episodios = temporadas.stream()
+                        .flatMap(t -> t.episodios().stream()
+                                .map(datosEpisodio ->
+                                        new Episodio(Integer.parseInt(t.temporada()), datosEpisodio)))
                         .collect(Collectors.toList());
+
+
+//                List<DatosEpisodio> datosEpisodios =  temporadas.stream()
+//                        .flatMap(t -> t.episodios().stream())
+//                        .collect(Collectors.toList());
 
                 System.out.println("**********************************************************************************");
                 System.out.println("¡Top 5 episodios!");
-                datosEpisodios.stream()
-                        .sorted(Comparator.comparing(DatosEpisodio::evaluacion).reversed())
-                        .filter(episodio -> !episodio.evaluacion().equalsIgnoreCase("N/A"))
+                episodios.stream()
+                        .sorted(Comparator.comparing(Episodio::getEvaluacion).reversed())
+                        .filter(episodio -> !episodio.getEvaluacion().toString().equalsIgnoreCase("N/A"))
                         .limit(5)
                         .forEach(System.out::println);
+
 
             } else if (opcion == 5) {
 
