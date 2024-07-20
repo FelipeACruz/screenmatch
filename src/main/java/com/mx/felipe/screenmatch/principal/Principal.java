@@ -8,10 +8,8 @@ import com.mx.felipe.screenmatch.service.ConsumoAPI;
 import com.mx.felipe.screenmatch.service.ConvierteDatos;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Principal {
@@ -27,7 +25,7 @@ public class Principal {
         System.out.println("A continuación digíte la opción que desea realizar: \n");
         String menuPrincipal = """
                 1) Obtener datos por Serie
-                2) Obtener dator por Serie, numero de temporada y episodio
+                2) Obtener datos por Serie, numero de temporada y episodio
                 3) Obtener todos los datos de la Serie
                 4) Obtener mejores episodios de la Serie
                 5) Salir""";
@@ -141,6 +139,47 @@ public class Principal {
                         .filter(episodio -> !episodio.getEvaluacion().toString().equalsIgnoreCase("N/A"))
                         .limit(5)
                         .forEach(System.out::println);
+
+
+                System.out.println("**********************************************************************************");
+                System.out.println("Indica el año a partir del cual desas ver los episodios");
+                var fecha = sc.nextInt();
+                sc.nextLine();
+
+                LocalDate fechaBusqueda = LocalDate.of(fecha, 1, 1);
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                episodios.stream()
+                        .filter(e -> e.getFechaLanzamiento() != null && e.getFechaLanzamiento().isAfter(fechaBusqueda))
+                        .forEach(e -> System.out.println(
+                                "Temporada: " + e.getTemporada() +
+                                        " Episodio: " + e.getTitulo() +
+                                        " Fecha de Lanzamiento: " + e.getFechaLanzamiento().format(formatter)
+                        ));
+
+                //Busca episodios por un pedazo del título
+                System.out.println("Por favor escriba el titulo del episodio que desea ver");
+                var pedazoTitulo = sc.nextLine();
+                Optional<Episodio> episodioBuscado = episodios.stream()
+                        .filter(e -> e.getTitulo().toUpperCase().contains(pedazoTitulo.toUpperCase()))
+                        .findFirst();
+                if(episodioBuscado.isPresent()){
+                    System.out.println(" Episodio encontrado");
+                    System.out.println("Los datos son: " + episodioBuscado.get());
+                } else {
+                    System.out.println("Episodio no encontrado");
+                }
+                Map<Integer , Double> evaluacionesPorTemporada = episodios.stream()
+                        .filter(e -> e.getEvaluacion() > 0.0)
+                        .collect(Collectors.groupingBy(Episodio::getTemporada,
+                                Collectors.averagingDouble(Episodio::getEvaluacion)));
+                System.out.println(evaluacionesPorTemporada);
+
+                DoubleSummaryStatistics est = episodios.stream()
+                        .filter(e -> e.getEvaluacion() > 0.0)
+                        .collect(Collectors.summarizingDouble(Episodio::getEvaluacion));
+                System.out.println("Media de las evaluaciones: " + est.getAverage());
+                System.out.println("Episodio Mejor evaluado: " + est.getMax());
 
 
             } else if (opcion == 5) {
