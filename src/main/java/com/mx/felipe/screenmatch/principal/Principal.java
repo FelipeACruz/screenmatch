@@ -28,7 +28,8 @@ public class Principal {
                 2) Obtener datos por Serie, numero de temporada y episodio
                 3) Obtener todos los datos de la Serie
                 4) Obtener mejores episodios de la Serie
-                5) Salir""";
+                5) Obtener episodios de una serie apartir de una fecha
+                6) Salir""";
         System.out.println("**********************************************************************************");
         System.out.println(menuPrincipal);
     }
@@ -174,33 +175,38 @@ public class Principal {
                         .filter(e -> e.getFechaLanzamiento() != null && e.getFechaLanzamiento().isAfter(fechaBusqueda))
                         .forEach(e -> System.out.println(
                                 "Temporada: " + e.getTemporada() +
-                                        " Episodio: " + e.getTitulo() +
-                                        " Fecha de Lanzamiento: " + e.getFechaLanzamiento().format(formatter)
+                                        ", Episodio: " + e.getTitulo() +
+                                        ", Fecha de Lanzamiento: " + e.getFechaLanzamiento().format(formatter)
                         ));
 
                 //Busca episodios por un pedazo del título
-                System.out.println("Por favor escriba el titulo del episodio que desea ver");
+                System.out.println("Por favor escriba el titulo del episodio que desea ver: ");
                 var pedazoTitulo = sc.nextLine();
                 Optional<Episodio> episodioBuscado = episodios.stream()
                         .filter(e -> e.getTitulo().toUpperCase().contains(pedazoTitulo.toUpperCase()))
                         .findFirst();
                 if(episodioBuscado.isPresent()){
-                    System.out.println(" Episodio encontrado");
+                    System.out.println("Episodio encontrado");
                     System.out.println("Los datos son: " + episodioBuscado.get());
                 } else {
                     System.out.println("Episodio no encontrado");
                 }
+
+                System.out.println("**********************************************************************************");
+                System.out.println("Evaluación promedio por temporada. ");
+
                 Map<Integer , Double> evaluacionesPorTemporada = episodios.stream()
                         .filter(e -> e.getEvaluacion() > 0.0)
                         .collect(Collectors.groupingBy(Episodio::getTemporada,
                                 Collectors.averagingDouble(Episodio::getEvaluacion)));
-                System.out.println(evaluacionesPorTemporada);
+
+                evaluacionesPorTemporada.forEach((k, v) -> System.out.println("Temporada: " + k + ", evaluacion: " + v));
 
                 DoubleSummaryStatistics est = episodios.stream()
                         .filter(e -> e.getEvaluacion() > 0.0)
                         .collect(Collectors.summarizingDouble(Episodio::getEvaluacion));
-                System.out.println("Media de las evaluaciones: " + est.getAverage());
-                System.out.println("Episodio Mejor evaluado: " + est.getMax());
+                System.out.println("Evaluacion promedio de la Serie: " + est.getAverage());
+                System.out.println("Calificación Episodio Mejor evaluado: " + est.getMax());
 
 
             } else if (opcion == 6) {
