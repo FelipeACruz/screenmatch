@@ -141,8 +141,29 @@ public class Principal {
                         .forEach(System.out::println);
 
 
+            } else if (opcion == 5) {
+
+                System.out.println("Ingrese el nombre de la serie: ");
+                var serie = sc.nextLine();
+                var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
+                var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
+
+                List<DatosTemporadas> temporadas = new ArrayList<>();
+                for (int i = 1; i <= Integer.parseInt(datosSerie.totalDeTemporadas()); i++) {
+                    var jsonTemporada =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + "&Season=" + i + API_KEY);
+                    var datosTemporada = conversor.obtenerDatos(jsonTemporada, DatosTemporadas.class);
+                    temporadas.add(datosTemporada);
+                }
+
+                // Convertir toda la informacion de las temporadas a una lista del tipo DatosEpisodio
+                List<Episodio> episodios = temporadas.stream()
+                        .flatMap(t -> t.episodios().stream()
+                                .map(datosEpisodio ->
+                                        new Episodio(Integer.parseInt(t.temporada()), datosEpisodio)))
+                        .collect(Collectors.toList());
+
                 System.out.println("**********************************************************************************");
-                System.out.println("Indica el año a partir del cual desas ver los episodios");
+                System.out.println("Indica el año a partir del cual deseas ver los episodios");
                 var fecha = sc.nextInt();
                 sc.nextLine();
 
@@ -182,12 +203,10 @@ public class Principal {
                 System.out.println("Episodio Mejor evaluado: " + est.getMax());
 
 
-            } else if (opcion == 5) {
-
+            } else if (opcion == 6) {
                 System.out.println("**********************************************************************************");
                 System.out.println("¡Esperamos verte pronto!");
                 break;
-
             } else {
                 System.out.println("**********************************************************************************");
                 System.out.println("Ingrese la opcion correcta!");
