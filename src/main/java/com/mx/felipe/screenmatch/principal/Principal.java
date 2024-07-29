@@ -215,6 +215,40 @@ public class Principal {
 
 
             } else if (opcion == 7) {
+
+                System.out.println("**********************************************************************************");
+                System.out.println("Obtener valoraciones de la serie");
+
+                System.out.println("Ingrese el nombre de la serie: ");
+                var serie = sc.nextLine();
+                var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
+                var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
+
+                var datosTemporadas = new Temporadas(datosSerie, consumoApi, conversor, API_KEY);
+                var temporadas = datosTemporadas.obtenerDatosTemporada(URL_BASE, serie);
+
+                List<Episodio> episodios = temporadas.stream()
+                        .flatMap(t -> t.episodios().stream()
+                                .map(datosEpisodio ->
+                                        new Episodio(Integer.parseInt(t.temporada()), datosEpisodio)))
+                        .collect(Collectors.toList());
+
+                Map<Integer , Double> evaluacionesPorTemporada = episodios.stream()
+                        .filter(e -> e.getEvaluacion() > 0.0)
+                        .collect(Collectors.groupingBy(Episodio::getTemporada,
+                                Collectors.averagingDouble(Episodio::getEvaluacion)));
+
+                evaluacionesPorTemporada.forEach((k, v) -> System.out.println("Temporada: " + k + ", evaluacion: " + v));
+
+                DoubleSummaryStatistics est = episodios.stream()
+                        .filter(e -> e.getEvaluacion() > 0.0)
+                        .collect(Collectors.summarizingDouble(Episodio::getEvaluacion));
+                System.out.println("Evaluacion promedio de la Serie: " + est.getAverage());
+                System.out.println("Calificación Episodio Mejor evaluado: " + est.getMax() + est.toString());
+
+                
+
+            } else if (opcion == 8) {
                 System.out.println("**********************************************************************************");
                 System.out.println("¡Esperamos verte pronto!");
                 break;
