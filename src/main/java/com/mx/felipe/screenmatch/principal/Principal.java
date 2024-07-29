@@ -1,9 +1,6 @@
 package com.mx.felipe.screenmatch.principal;
 
-import com.mx.felipe.screenmatch.model.DatosEpisodio;
-import com.mx.felipe.screenmatch.model.DatosSerie;
-import com.mx.felipe.screenmatch.model.DatosTemporadas;
-import com.mx.felipe.screenmatch.model.Episodio;
+import com.mx.felipe.screenmatch.model.*;
 import com.mx.felipe.screenmatch.service.ConsumoAPI;
 import com.mx.felipe.screenmatch.service.ConvierteDatos;
 
@@ -29,7 +26,9 @@ public class Principal {
                 3) Obtener todos los datos de la Serie
                 4) Obtener mejores episodios de la Serie
                 5) Obtener episodios de una serie apartir de una fecha
-                6) Salir""";
+                6) Obtener episodio por pedazo de su nombre
+                7) Obtener valoraciones de la serie.
+                8) Salir""";
         System.out.println("**********************************************************************************");
         System.out.println(menuPrincipal);
     }
@@ -76,12 +75,8 @@ public class Principal {
                 var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
                 var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
 
-                List<DatosTemporadas> temporadas = new ArrayList<>();
-                for (int i = 1; i <= Integer.parseInt(datosSerie.totalDeTemporadas()); i++) {
-                    var jsonTemporada =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + "&Season=" + i + API_KEY);
-                    var datosTemporada = conversor.obtenerDatos(jsonTemporada, DatosTemporadas.class);
-                    temporadas.add(datosTemporada);
-                }
+                var datosTemporadas = new Temporadas(datosSerie, consumoApi, conversor, API_KEY);
+                var temporadas = datosTemporadas.obtenerDatosTemporada(URL_BASE, serie);
 
                 //temporadas.forEach(System.out::println);
 
@@ -114,12 +109,8 @@ public class Principal {
                 var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
                 var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
 
-                List<DatosTemporadas> temporadas = new ArrayList<>();
-                for (int i = 1; i <= Integer.parseInt(datosSerie.totalDeTemporadas()); i++) {
-                    var jsonTemporada =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + "&Season=" + i + API_KEY);
-                    var datosTemporada = conversor.obtenerDatos(jsonTemporada, DatosTemporadas.class);
-                    temporadas.add(datosTemporada);
-                }
+                var datosTemporadas = new Temporadas(datosSerie, consumoApi, conversor, API_KEY);
+                var temporadas = datosTemporadas.obtenerDatosTemporada(URL_BASE, serie);
 
                 // Convertir toda la informacion de las temporadas a una lista del tipo DatosEpisodio
                 List<Episodio> episodios = temporadas.stream()
@@ -149,12 +140,8 @@ public class Principal {
                 var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
                 var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
 
-                List<DatosTemporadas> temporadas = new ArrayList<>();
-                for (int i = 1; i <= Integer.parseInt(datosSerie.totalDeTemporadas()); i++) {
-                    var jsonTemporada =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + "&Season=" + i + API_KEY);
-                    var datosTemporada = conversor.obtenerDatos(jsonTemporada, DatosTemporadas.class);
-                    temporadas.add(datosTemporada);
-                }
+                var datosTemporadas = new Temporadas(datosSerie, consumoApi, conversor, API_KEY);
+                var temporadas = datosTemporadas.obtenerDatosTemporada(URL_BASE, serie);
 
                 // Convertir toda la informacion de las temporadas a una lista del tipo DatosEpisodio
                 List<Episodio> episodios = temporadas.stream()
@@ -179,8 +166,26 @@ public class Principal {
                                         ", Fecha de Lanzamiento: " + e.getFechaLanzamiento().format(formatter)
                         ));
 
+            } else if (opcion == 6) {
+
+                System.out.println("Ingrese el nombre de la serie: ");
+                var serie = sc.nextLine();
+                var json =  consumoApi.getData(URL_BASE + serie.replace(" ", "+") + API_KEY);
+                var datosSerie = conversor.obtenerDatos(json, DatosSerie.class);
+
+                var datosTemporadas = new Temporadas(datosSerie, consumoApi, conversor, API_KEY);
+                var temporadas = datosTemporadas.obtenerDatosTemporada(URL_BASE, serie);
+
+
+                List<Episodio> episodios = temporadas.stream()
+                        .flatMap(t -> t.episodios().stream()
+                                .map(datosEpisodio ->
+                                        new Episodio(Integer.parseInt(t.temporada()), datosEpisodio)))
+                        .collect(Collectors.toList());
+
+
                 //Busca episodios por un pedazo del título
-                System.out.println("Por favor escriba el titulo del episodio que desea ver: ");
+                System.out.println("Por favor escriba un pedazo del titulo del episodio que desea ver: ");
                 var pedazoTitulo = sc.nextLine();
                 Optional<Episodio> episodioBuscado = episodios.stream()
                         .filter(e -> e.getTitulo().toUpperCase().contains(pedazoTitulo.toUpperCase()))
@@ -209,7 +214,7 @@ public class Principal {
                 System.out.println("Calificación Episodio Mejor evaluado: " + est.getMax());
 
 
-            } else if (opcion == 6) {
+            } else if (opcion == 7) {
                 System.out.println("**********************************************************************************");
                 System.out.println("¡Esperamos verte pronto!");
                 break;
