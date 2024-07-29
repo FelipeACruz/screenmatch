@@ -197,23 +197,6 @@ public class Principal {
                     System.out.println("Episodio no encontrado");
                 }
 
-                System.out.println("**********************************************************************************");
-                System.out.println("Evaluación promedio por temporada. ");
-
-                Map<Integer , Double> evaluacionesPorTemporada = episodios.stream()
-                        .filter(e -> e.getEvaluacion() > 0.0)
-                        .collect(Collectors.groupingBy(Episodio::getTemporada,
-                                Collectors.averagingDouble(Episodio::getEvaluacion)));
-
-                evaluacionesPorTemporada.forEach((k, v) -> System.out.println("Temporada: " + k + ", evaluacion: " + v));
-
-                DoubleSummaryStatistics est = episodios.stream()
-                        .filter(e -> e.getEvaluacion() > 0.0)
-                        .collect(Collectors.summarizingDouble(Episodio::getEvaluacion));
-                System.out.println("Evaluacion promedio de la Serie: " + est.getAverage());
-                System.out.println("Calificación Episodio Mejor evaluado: " + est.getMax());
-
-
             } else if (opcion == 7) {
 
                 System.out.println("**********************************************************************************");
@@ -246,7 +229,7 @@ public class Principal {
                 System.out.println("Evaluacion promedio de la Serie: " + est.getAverage());
                 System.out.println("Calificación Episodio Mejor evaluado: " + est.getMax() + est.toString());
 
-                
+
 
             } else if (opcion == 8) {
                 System.out.println("**********************************************************************************");
