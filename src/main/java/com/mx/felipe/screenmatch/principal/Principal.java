@@ -226,8 +226,14 @@ public class Principal {
                 DoubleSummaryStatistics est = episodios.stream()
                         .filter(e -> e.getEvaluacion() > 0.0)
                         .collect(Collectors.summarizingDouble(Episodio::getEvaluacion));
+
                 System.out.println("Evaluacion promedio de la Serie: " + est.getAverage());
-                System.out.println("Calificación Episodio Mejor evaluado: " + est.getMax() + est.toString());
+                System.out.println("Datos Episodio Mejor evaluado: " + episodios.stream().filter(episodio -> episodio.getEvaluacion() >= est.getMax()).collect(Collectors.toList()));
+                System.out.println("Datos Episodio Peor evaluado: " + episodios.stream()
+                        .sorted(Comparator.comparing(Episodio::getEvaluacion))
+                        .filter(episodio -> episodio.getEvaluacion() >= est.getMin())
+                        .limit(1)
+                        .collect(Collectors.toList()));
 
 
 
